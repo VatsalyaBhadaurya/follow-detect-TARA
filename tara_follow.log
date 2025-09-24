@@ -1,0 +1,64 @@
+2025-09-24 21:45:37,656 - root - INFO - Starting Tara Person Following System
+2025-09-24 21:45:37,657 - root - INFO - Arguments: {'camera': 0, 'width': 640, 'height': 480, 'fps': 30, 'confidence': 0.5, 'safe_distance': 1.0, 'no_voice': False, 'no_display': False, 'save_video': False, 'video_filename': 'follow_output.avi', 'log_level': 'INFO'}
+2025-09-24 21:45:40,221 - root - INFO - YOLO model loaded successfully from yolov8n.pt
+2025-09-24 21:45:40,243 - root - INFO - PersonDetector initialized successfully
+2025-09-24 21:45:40,243 - root - INFO - DistanceEstimator initialized successfully
+2025-09-24 21:45:40,244 - root - INFO - MovementController initialized successfully
+2025-09-24 21:45:40,543 - root - INFO - Calibrating microphone for ambient noise...
+2025-09-24 21:45:42,883 - root - INFO - Energy threshold set to 6.789606816508446
+2025-09-24 21:45:42,883 - root - INFO - VoiceCommandHandler initialized successfully
+2025-09-24 21:45:42,883 - root - INFO - Registered callback for command: follow me
+2025-09-24 21:45:42,884 - root - INFO - Registered callback for command: stop
+2025-09-24 21:45:42,884 - root - INFO - FollowPersonTask initialized successfully
+2025-09-24 21:45:43,318 - root - INFO - Testing microphone...
+2025-09-24 21:45:44,646 - root - ERROR - Microphone test failed: listening timed out while waiting for phrase to start
+2025-09-24 21:45:44,646 - root - WARNING - Microphone test failed, voice commands may not work
+2025-09-24 21:45:44,646 - root - INFO - Task initialization completed successfully
+2025-09-24 21:45:44,647 - root - INFO - Voice command listening started
+2025-09-24 21:45:44,647 - root - INFO - Voice command listening started
+2025-09-24 21:45:44,648 - root - INFO - Starting follow person task loop
+2025-09-24 21:46:19,571 - root - INFO - Started following mode for person None
+2025-09-24 21:46:19,571 - root - INFO - Started following mode
+2025-09-24 21:46:19,596 - root - INFO - Started search behavior
+2025-09-24 21:46:21,166 - root - INFO - Started following mode for person None
+2025-09-24 21:46:21,166 - root - INFO - Started following mode
+2025-09-24 21:46:21,188 - root - INFO - Started search behavior
+2025-09-24 21:46:22,905 - root - INFO - Stopped following mode
+2025-09-24 21:46:22,905 - root - INFO - Stopped following mode
+2025-09-24 21:46:24,554 - root - INFO - Cleaning up task resources...
+2025-09-24 21:46:25,626 - root - INFO - Voice command listening stopped
+2025-09-24 21:46:25,626 - root - INFO - VoiceCommandHandler cleaned up
+2025-09-24 21:46:25,627 - root - INFO - Stopped following mode
+2025-09-24 21:46:25,627 - root - INFO - MovementController cleaned up
+2025-09-24 21:46:25,638 - root - INFO - PersonDetector cleaned up
+2025-09-24 21:46:25,960 - root - INFO - Task completed. Total frames: 682, Total time: 41.31s, Average FPS: 16.51
+2025-09-24 21:46:25,960 - root - INFO - Task cleanup completed
+2025-09-24 21:46:25,960 - root - INFO - Tara Person Following System completed
+2025-09-24 21:47:23,338 - root - INFO - Starting Tara Person Following System
+2025-09-24 21:47:23,339 - root - INFO - Arguments: {'camera': 0, 'width': 640, 'height': 480, 'fps': 30, 'confidence': 0.5, 'safe_distance': 1.0, 'no_voice': False, 'no_display': False, 'save_video': False, 'video_filename': 'follow_output.avi', 'log_level': 'INFO'}
+2025-09-24 21:47:23,358 - root - INFO - YOLO model loaded successfully from yolov8n.pt
+2025-09-24 21:47:23,367 - root - INFO - PersonDetector initialized successfully
+2025-09-24 21:47:23,367 - root - INFO - DistanceEstimator initialized successfully
+2025-09-24 21:47:23,367 - root - INFO - MovementController initialized successfully
+2025-09-24 21:47:23,438 - root - INFO - Calibrating microphone for ambient noise...
+2025-09-24 21:47:25,779 - root - INFO - Energy threshold set to 6.789606816508446
+2025-09-24 21:47:25,779 - root - INFO - VoiceCommandHandler initialized successfully
+2025-09-24 21:47:25,779 - root - INFO - Registered callback for command: follow me
+2025-09-24 21:47:25,780 - root - INFO - Registered callback for command: stop
+2025-09-24 21:47:25,780 - root - INFO - FollowPersonTask initialized successfully
+2025-09-24 21:47:26,183 - root - INFO - Testing microphone...
+2025-09-24 21:47:27,517 - root - ERROR - Microphone test failed: listening timed out while waiting for phrase to start
+2025-09-24 21:47:27,518 - root - WARNING - Microphone test failed, voice commands may not work
+2025-09-24 21:47:27,518 - root - INFO - Task initialization completed successfully
+2025-09-24 21:47:27,519 - root - INFO - Voice command listening started
+2025-09-24 21:47:27,519 - root - INFO - Voice command listening started
+2025-09-24 21:47:27,520 - root - INFO - Starting follow person task loop
+2025-09-24 21:48:06,231 - root - INFO - Cleaning up task resources...
+2025-09-24 21:48:07,115 - root - INFO - Voice command listening stopped
+2025-09-24 21:48:07,115 - root - INFO - VoiceCommandHandler cleaned up
+2025-09-24 21:48:07,115 - root - INFO - Stopped following mode
+2025-09-24 21:48:07,115 - root - INFO - MovementController cleaned up
+2025-09-24 21:48:07,127 - root - INFO - PersonDetector cleaned up
+2025-09-24 21:48:07,408 - root - INFO - Task completed. Total frames: 705, Total time: 39.89s, Average FPS: 17.67
+2025-09-24 21:48:07,408 - root - INFO - Task cleanup completed
+2025-09-24 21:48:07,408 - root - INFO - Tara Person Following System completed

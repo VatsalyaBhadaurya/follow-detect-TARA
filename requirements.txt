@@ -1,0 +1,11 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+speechrecognition>=3.10.0
+pyaudio>=0.2.11
+pygame>=2.5.0
+scipy>=1.11.0
+mediapipe>=0.10.5
+imutils>=0.5.4
