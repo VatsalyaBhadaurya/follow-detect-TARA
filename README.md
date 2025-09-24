@@ -2,14 +2,6 @@
 
 A comprehensive person following system for the Tara robot that combines computer vision, voice recognition, and intelligent movement control.
 
-## 🎉 Current Status: PRODUCTION READY!
-
-✅ **Voice Commands**: Working with PocketSphinx offline recognition  
-✅ **Person Detection**: YOLOv8 with multi-person tracking  
-✅ **Distance Estimation**: Realistic 1.5-4.0m range  
-✅ **Bounding Boxes**: Color-coded with distance information  
-✅ **Real-time Performance**: 17+ FPS  
-
 ## Features
 
 ### 🎯 Person Detection & Tracking
@@ -24,11 +16,10 @@ A comprehensive person following system for the Tara robot that combines compute
 - **Combined Approach**: Merges multiple estimation methods for improved accuracy
 - **Real-time Calibration**: Automatic calibration for webcam setups
 
-### 🎤 Voice Commands (WORKING!)
+### 🎤 Voice Commands
 - **"Follow Me"**: Activates person following mode
 - **"Stop"**: Deactivates following mode and halts robot movement
 - **PocketSphinx Recognition**: Offline voice recognition (no internet required)
-- **Working Microphone Devices**: Automatic detection of compatible microphones
 - **Keyboard Fallback**: F/S keys for manual control
 
 ### 🤖 Movement Control
@@ -63,16 +54,11 @@ A comprehensive person following system for the Tara robot that combines compute
 
 ## Usage
 
-### 🚀 Quick Start (Recommended)
-Run the system with working voice commands:
+### Quick Start
 ```bash
-python main_with_working_voice.py
-```
-
-### Basic Usage
-Run the system with default settings:
-```bash
-python main.py
+python main_with_working_voice.py  # Recommended: with working voice commands
+# OR
+python main.py  # Basic version
 ```
 
 ### Advanced Usage
@@ -99,16 +85,8 @@ python main.py --camera 0 --width 640 --height 480 --fps 30 \
 | `--log-level` | Logging level (DEBUG/INFO/WARNING/ERROR) | INFO |
 
 ### Controls
-
-#### Voice Commands (WORKING!)
-- **"Follow me"** - Start following the detected person
-- **"Stop"** - Stop following and halt movement
-- **Offline Recognition** - Works without internet using PocketSphinx
-
-#### Keyboard Controls
-- **F** - Start following mode
-- **S** - Stop following mode
-- **Q** or **ESC** - Quit the application
+- **Voice**: "Follow me", "Stop" (PocketSphinx offline recognition)
+- **Keyboard**: F (follow), S (stop), Q/ESC (quit)
 
 ## System Architecture
 
@@ -145,40 +123,6 @@ Camera → PersonDetector → DistanceEstimator → MovementController → Robot
 VoiceHandler ←→ FollowPersonTask ←→ Display/Video ←←←←←←←←←←←←←←←←←←←←←←
 ```
 
-## Voice Commands Troubleshooting
-
-### ✅ Working Solutions
-
-#### 1. Main System (Recommended)
-```bash
-python main_with_working_voice.py
-```
-- **Status**: ✅ FULLY WORKING
-- **Recognition**: PocketSphinx (offline)
-- **Performance**: 17+ FPS
-
-#### 2. Microphone Troubleshooting
-```bash
-python mic_troubleshooting.py
-```
-- Tests all microphone devices
-- Identifies working devices: 1, 5, 6
-- Provides detailed diagnostics
-
-### Common Voice Issues & Solutions
-
-| Issue | Solution |
-|-------|----------|
-| "listening timed out" | Speak louder or closer to microphone |
-| "Could not understand audio" | Speak more clearly, try different words |
-| "Microphone test failed" | Check microphone permissions and hardware |
-| "No working microphones" | Try different USB microphone or check drivers |
-
-### Windows Microphone Setup
-1. **Check permissions**: Settings > Privacy > Microphone
-2. **Allow desktop apps**: Enable microphone access for Python/VS Code
-3. **Test microphone**: Use Windows Sound settings to verify input levels
-
 ## Configuration
 
 ### Camera Settings
@@ -208,63 +152,21 @@ config = FollowTaskConfig(
 )
 ```
 
-### Voice Settings (Working)
-```python
-# Optimized settings for PocketSphinx
-energy_threshold = 300        # Higher threshold for better detection
-timeout = 3                   # Longer timeout
-phrase_time_limit = 4         # Longer phrase time
-dynamic_energy_threshold = False  # Fixed threshold
-```
-
-## Performance Metrics
-
-### Current Performance
-- **FPS**: 17+ (real-time performance)
-- **Detection**: Consistent person tracking
-- **Distance**: Realistic 1.5-4.0m range
-- **Voice**: ~1-2 second response time
-- **Accuracy**: 80-90% voice recognition with PocketSphinx
-
-### Optimization Tips
-1. **Reduce FPS for better accuracy**:
-   ```bash
-   python main.py --fps 15
-   ```
-
-2. **Lower resolution for faster processing**:
-   ```bash
-   python main.py --width 320 --height 240
-   ```
-
-3. **Disable display for headless operation**:
-   ```bash
-   python main.py --no-display
-   ```
-
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Camera not detected**
-   - Check camera permissions
-   - Verify camera ID: try 0, 1, 2, etc.
-   - Test with: `python -c "import cv2; cap = cv2.VideoCapture(0); print('Camera OK' if cap.isOpened() else 'Camera Failed')"`
+| Issue | Solution |
+|-------|----------|
+| **Camera not detected** | Check permissions, try different camera IDs (0,1,2), test with OpenCV |
+| **Poor person detection** | Lower confidence threshold (`--confidence 0.3`), improve lighting |
+| **Voice commands not working** | Run `python mic_troubleshooting.py`, check Windows microphone permissions |
+| **Inaccurate distance** | System calibrated for 1.5-4.0m indoor distances, uses pinhole camera model |
 
-2. **Poor person detection**
-   - Adjust confidence threshold: `--confidence 0.3`
-   - Ensure good lighting conditions
-   - Check camera focus and positioning
-
-3. **Voice commands not working**
-   - Run microphone test: `python mic_troubleshooting.py`
-   - Check Windows microphone permissions
-   - Try keyboard fallback (F/S keys)
-
-4. **Inaccurate distance estimation**
-   - System is calibrated for realistic indoor distances (1.5-4.0m)
-   - Distance calculation uses height-based pinhole camera model
-   - Automatic calibration for typical webcam setups
+### Performance Tips
+- **Reduce FPS**: `python main.py --fps 15` for better accuracy
+- **Lower resolution**: `python main.py --width 320 --height 240` for faster processing
+- **Headless mode**: `python main.py --no-display` for server operation
 
 ## API Reference
 
@@ -319,19 +221,16 @@ For issues and questions:
 2. Run `python mic_troubleshooting.py` for voice issues
 3. Review existing GitHub issues
 4. Create a new issue with detailed information
-5. Contact the development team
 
 ---
 
 **Note**: This system is designed for educational and research purposes. Always ensure safety when operating robots, especially around people and obstacles.
 
-## 🎯 Production Ready Features
+## 🎯 Status: Production Ready
 
-✅ **Voice Commands**: Working with PocketSphinx offline recognition  
-✅ **Person Detection**: YOLOv8 with realistic distance estimation  
-✅ **Bounding Boxes**: Color-coded visualization with distance labels  
+✅ **Voice Commands**: PocketSphinx offline recognition  
+✅ **Person Detection**: YOLOv8 with realistic distance estimation (1.5-4.0m)  
 ✅ **Real-time Performance**: 17+ FPS with smooth tracking  
-✅ **Robust Error Handling**: Graceful fallbacks and error recovery  
 ✅ **Cross-platform**: Works on Windows, Linux, macOS  
 
 The Tara Person Following System is now **fully functional** and ready for integration with robot hardware! 🚀
