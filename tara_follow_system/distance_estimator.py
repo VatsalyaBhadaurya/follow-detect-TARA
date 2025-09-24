@@ -69,17 +69,37 @@ class DistanceEstimator:
         # Default parameters (will be updated during calibration)
         self._initialize_default_parameters()
         
+        # Realistic calibration for typical webcam setup
+        self._calibrate_realistic_parameters()
+        
         logging.info("DistanceEstimator initialized successfully")
+    
+    def _calibrate_realistic_parameters(self):
+        """Set realistic parameters for typical webcam distance estimation"""
+        # Typical webcam parameters for 640x480 resolution
+        # These values are calibrated for realistic indoor distances (0.5m - 3m)
+        
+        # For height-based estimation: distance = (real_height * focal_length) / pixel_height
+        # Typical webcam has ~60 degree horizontal FOV, ~45 degree vertical FOV
+        # For 480px height: focal_length ≈ 480 / (2 * tan(22.5°)) ≈ 580 pixels
+        
+        # More realistic focal length for webcam
+        self.realistic_focal_length = 580.0
+        
+        # Realistic size-based constant (calibrated for indoor distances)
+        self.realistic_size_k = 150.0
+        
+        logging.info("Realistic parameters calibrated for webcam distance estimation")
     
     def _initialize_default_parameters(self):
         """Initialize default distance estimation parameters"""
         # Default size-based distance estimation
         # Formula: distance = k / sqrt(bounding_box_area)
-        self.default_size_k = 5000.0  # Calibration constant
+        self.default_size_k = 200.0  # More realistic calibration constant
         
         # Default position-based distance estimation
         # Based on perspective projection
-        self.default_position_focal_length = 800.0  # Approximate focal length in pixels
+        self.default_position_focal_length = 400.0  # More realistic focal length for webcam
     
     def estimate_distance_size_based(self, 
                                    person_bbox, 
@@ -111,15 +131,18 @@ class DistanceEstimator:
             # Method 2: Height-based estimation (more accurate)
             # Use pinhole camera model: distance = (real_height * focal_length) / pixel_height
             if person_height_pixels > 0:
-                # Estimate focal length from frame height and FOV
-                focal_length_pixels = frame_height / (2 * np.tan(np.radians(self.camera_fov_vertical / 2)))
+                # Use realistic focal length for webcam
+                focal_length_pixels = self.realistic_focal_length
                 distance_height = (self.reference_height_meters * focal_length_pixels) / person_height_pixels
                 
-                # Combine both methods for better accuracy
-                if distance > 0:
-                    distance = (distance + distance_height) / 2
-                else:
-                    distance = distance_height
+                # Use height-based estimation as primary (more accurate)
+                distance = distance_height
+                
+                # Apply sanity checks for realistic distances
+                if distance < 0.2:  # Too close
+                    distance = 0.2
+                elif distance > 5.0:  # Too far for typical indoor
+                    distance = 5.0
             
             # Calculate confidence based on bounding box size
             # Larger bounding boxes (closer persons) have higher confidence
@@ -256,13 +279,13 @@ class DistanceEstimator:
                 secondary_estimate.confidence * secondary_weight
             )
             
-            # Apply sanity checks
-            if combined_distance < 0.3:  # Minimum distance
-                combined_distance = 0.3
+            # Apply realistic sanity checks for indoor distances
+            if combined_distance < 0.2:  # Minimum realistic distance
+                combined_distance = 0.2
                 combined_confidence *= 0.8
-            elif combined_distance > 10.0:  # Maximum reasonable distance
-                combined_distance = 10.0
-                combined_confidence *= 0.6
+            elif combined_distance > 4.0:  # Maximum realistic indoor distance
+                combined_distance = 4.0
+                combined_confidence *= 0.7
             
             return DistanceEstimate(
                 distance_meters=combined_distance,
@@ -403,7 +426,7 @@ class DistanceEstimator:
             return "close"
         elif distance_meters < 2.0:
             return "optimal"
-        elif distance_meters < 4.0:
+        elif distance_meters < 3.0:
             return "far"
         else:
             return "very_far"

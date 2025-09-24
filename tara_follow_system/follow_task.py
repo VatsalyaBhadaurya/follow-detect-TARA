@@ -82,7 +82,7 @@ class FollowPersonTask:
         
         # Initialize modules
         self.person_detector = PersonDetector(
-            confidence_threshold=self.config.confidence_threshold,
+            confidence_threshold=0.3,  # Lower threshold for better detection
             tracking_enabled=self.config.tracking_enabled
         )
         
@@ -101,8 +101,18 @@ class FollowPersonTask:
         # Initialize voice handler if enabled
         self.voice_handler = None
         if self.config.voice_enabled:
-            self.voice_handler = VoiceCommandHandler(language=self.config.language)
-            self._setup_voice_callbacks()
+            try:
+                self.voice_handler = VoiceCommandHandler(language=self.config.language)
+                # Test if voice handler works
+                if not self.voice_handler.test_microphone():
+                    logging.warning("Voice handler failed, voice commands disabled")
+                    self.voice_handler = None
+                else:
+                    self._setup_voice_callbacks()
+            except Exception as e:
+                logging.error(f"Voice handler initialization failed: {e}")
+                logging.info("Voice commands disabled")
+                self.voice_handler = None
         
         # Task state
         self.current_state = FollowTaskState.IDLE
@@ -289,6 +299,11 @@ class FollowPersonTask:
             # Track persons if tracking is enabled
             tracked_persons = self.person_detector.track_persons(frame, detected_persons)
             
+            # Optional debug output (commented out for clean output)
+            # if self.frame_count % 30 == 0:
+            #     logging.info(f"Frame {self.frame_count}: {len(detected_persons)} raw detections, "
+            #                f"{len(tracked_persons)} tracked persons")
+            
             # Get the target person (largest/closest)
             target_person = self.person_detector.get_largest_person(tracked_persons)
             
@@ -301,6 +316,12 @@ class FollowPersonTask:
                     frame.shape[1],  # frame width
                     frame.shape[0]   # frame height
                 )
+                
+                # Optional debug output (commented out for clean output)
+                # if self.frame_count % 30 == 0:
+                #     logging.info(f"Target person found: ID={target_person.person_id}, "
+                #                f"distance={distance_estimate.distance_meters:.2f}m, "
+                #                f"confidence={distance_estimate.confidence:.2f}")
                 
                 # Update movement based on target
                 if self.current_state == FollowTaskState.FOLLOWING:
@@ -321,14 +342,24 @@ class FollowPersonTask:
                         self.current_state = FollowTaskState.SEARCHING
                         self.movement_controller.start_search_behavior()
                 
-                # Draw detections on frame
-                frame = self.person_detector.draw_detections(frame, tracked_persons)
+                # Draw detections on frame with distance information
+                distances = []
+                for person in tracked_persons:
+                    person_distance = self.distance_estimator.estimate_distance_combined(
+                        person, frame.shape[1], frame.shape[0]
+                    )
+                    distances.append(person_distance.distance_meters)
                 
-                # Draw distance information
-                self._draw_distance_info(frame, distance_estimate, target_person)
+                # Draw bounding boxes with distances
+                frame = self.person_detector.draw_detections(frame, tracked_persons, distances)
+                
+                # Draw additional distance information for target person
+                self._draw_target_distance_info(frame, distance_estimate, target_person)
             
             else:
-                # No person detected
+                # No person detected - draw empty frame
+                frame = self.person_detector.draw_detections(frame, [])
+                
                 if self.current_state == FollowTaskState.FOLLOWING:
                     self.current_state = FollowTaskState.SEARCHING
                     self.movement_controller.start_search_behavior()
@@ -357,34 +388,70 @@ class FollowPersonTask:
             elif command == CommandType.STOP:
                 self.stop_following()
     
-    def _draw_distance_info(self, 
-                           frame: np.ndarray, 
-                           distance_estimate: DistanceEstimate,
-                           person: PersonBoundingBox):
+    def _draw_target_distance_info(self, 
+                                  frame: np.ndarray, 
+                                  distance_estimate: DistanceEstimate,
+                                  person: PersonBoundingBox):
         """
-        Draw distance information on frame
+        Draw target person distance information on frame
         
         Args:
             frame: Video frame to draw on
             distance_estimate: Distance estimate information
             person: Person bounding box
         """
-        # Draw distance text
-        distance_text = f"Distance: {distance_estimate.distance_meters:.2f}m"
+        # Draw target person info box
+        info_box_height = 120
+        info_box_width = 300
+        info_x = frame.shape[1] - info_box_width - 10
+        info_y = 10
+        
+        # Background for info box
+        cv2.rectangle(frame, 
+                     (info_x, info_y), 
+                     (info_x + info_box_width, info_y + info_box_height), 
+                     (0, 0, 0), -1)
+        cv2.rectangle(frame, 
+                     (info_x, info_y), 
+                     (info_x + info_box_width, info_y + info_box_height), 
+                     (255, 255, 255), 2)
+        
+        # Draw target person information
+        target_text = "TARGET PERSON"
+        cv2.putText(frame, target_text, (info_x + 10, info_y + 25), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+        
+        distance_text = f"Distance: {distance_estimate.distance_meters:.1f}m"
         confidence_text = f"Confidence: {distance_estimate.confidence:.2f}"
         method_text = f"Method: {distance_estimate.method}"
         
-        cv2.putText(frame, distance_text, (10, 30), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-        cv2.putText(frame, confidence_text, (10, 60), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
-        cv2.putText(frame, method_text, (10, 80), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+        cv2.putText(frame, distance_text, (info_x + 10, info_y + 50), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(frame, confidence_text, (info_x + 10, info_y + 70), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(frame, method_text, (info_x + 10, info_y + 90), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         
-        # Draw state information
-        state_text = f"State: {self.current_state.value}"
-        cv2.putText(frame, state_text, (10, 110), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+        # Draw distance category
+        distance_category = self.distance_estimator.get_distance_category(
+            distance_estimate.distance_meters
+        )
+        category_color = {
+            "too_close": (0, 0, 255),      # Red
+            "close": (0, 255, 255),        # Yellow
+            "optimal": (0, 255, 0),        # Green
+            "far": (255, 165, 0),          # Orange
+            "very_far": (255, 0, 0)        # Red
+        }.get(distance_category, (255, 255, 255))
+        
+        category_text = f"Category: {distance_category.replace('_', ' ').title()}"
+        cv2.putText(frame, category_text, (info_x + 10, info_y + 110), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, category_color, 2)
+        
+        # Draw state information at top
+        state_text = f"State: {self.current_state.value.upper()}"
+        cv2.putText(frame, state_text, (10, 30), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
     
     def _update_display(self, frame: np.ndarray):
         """

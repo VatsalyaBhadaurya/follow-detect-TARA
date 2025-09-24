@@ -9,7 +9,11 @@ It initializes the task with default configuration and runs the main loop.
 import sys
 import logging
 import argparse
+import os
 from tara_follow_system.follow_task import FollowPersonTask, FollowTaskConfig
+
+# Suppress YOLO verbose output
+os.environ['YOLO_VERBOSE'] = 'False'
 
 def setup_logging(log_level: str = "INFO"):
     """

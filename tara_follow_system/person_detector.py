@@ -12,6 +12,10 @@ import logging
 from dataclasses import dataclass
 from ultralytics import YOLO
 import mediapipe as mp
+import os
+
+# Suppress YOLO verbose output globally
+os.environ['YOLO_VERBOSE'] = 'False'
 
 @dataclass
 class PersonBoundingBox:
@@ -69,9 +73,11 @@ class PersonDetector:
         self.confidence_threshold = confidence_threshold
         self.tracking_enabled = tracking_enabled
         
-        # Initialize YOLO model
+        # Initialize YOLO model with verbose=False to suppress logs
         try:
             self.yolo_model = YOLO(model_path)
+            # Suppress YOLO verbose output
+            self.yolo_model.verbose = False
             logging.info(f"YOLO model loaded successfully from {model_path}")
         except Exception as e:
             logging.error(f"Failed to load YOLO model: {e}")
@@ -109,8 +115,8 @@ class PersonDetector:
             List of PersonBoundingBox objects for detected persons
         """
         try:
-            # Run YOLO inference
-            results = self.yolo_model(frame, conf=self.confidence_threshold)
+            # Run YOLO inference with verbose=False to suppress logs
+            results = self.yolo_model(frame, conf=self.confidence_threshold, verbose=False)
             
             persons = []
             
@@ -232,38 +238,69 @@ class PersonDetector:
     
     def draw_detections(self, 
                        frame: np.ndarray, 
-                       persons: List[PersonBoundingBox]) -> np.ndarray:
+                       persons: List[PersonBoundingBox],
+                       distances: List[float] = None) -> np.ndarray:
         """
         Draw bounding boxes and information on frame
         
         Args:
             frame: Input frame
             persons: List of detected persons
+            distances: Optional list of distance estimates for each person
             
         Returns:
             Frame with drawn bounding boxes and labels
         """
         frame_copy = frame.copy()
         
-        for person in persons:
+        for i, person in enumerate(persons):
+            # Choose color based on distance (if available)
+            if distances and i < len(distances):
+                distance = distances[i]
+                if distance < 1.0:
+                    color = (0, 0, 255)  # Red for close
+                elif distance < 2.0:
+                    color = (0, 255, 255)  # Yellow for medium
+                else:
+                    color = (0, 255, 0)  # Green for far
+            else:
+                color = (0, 255, 0)  # Default green
+            
             # Draw bounding box
             cv2.rectangle(frame_copy, 
                          (person.x1, person.y1), 
                          (person.x2, person.y2), 
-                         (0, 255, 0), 2)
+                         color, 3)
             
-            # Draw label
-            label = f"Person {person.person_id}: {person.confidence:.2f}"
+            # Prepare label with distance information
+            if distances and i < len(distances):
+                distance = distances[i]
+                label = f"Person {person.person_id}: {distance:.1f}m ({person.confidence:.2f})"
+            else:
+                label = f"Person {person.person_id}: {person.confidence:.2f}"
+            
             if person.person_id is None:
-                label = f"Person: {person.confidence:.2f}"
+                if distances and i < len(distances):
+                    distance = distances[i]
+                    label = f"Person: {distance:.1f}m ({person.confidence:.2f})"
+                else:
+                    label = f"Person: {person.confidence:.2f}"
+            
+            # Draw label with background
+            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+            cv2.rectangle(frame_copy, 
+                         (person.x1, person.y1 - 25), 
+                         (person.x1 + label_size[0], person.y1), 
+                         color, -1)
             
             cv2.putText(frame_copy, label, 
                        (person.x1, person.y1 - 10),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
             
             # Draw center point
             center = person.center
-            cv2.circle(frame_copy, center, 5, (255, 0, 0), -1)
+            cv2.circle(frame_copy, center, 8, (255, 0, 0), -1)
+            cv2.circle(frame_copy, center, 12, (255, 255, 255), 2)
         
         return frame_copy
     
